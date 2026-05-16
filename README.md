@@ -33,6 +33,9 @@ Package Manager Console
 Update-Database
 
 
+# DATABASE JUGA SUDAH TERSEDIA PADA FOLDER DATABASE
+LoanApprovalDB.SQL
+
 # Loan Approval System
 
 Loan Approval System adalah aplikasi web berbasis ASP.NET Core MVC untuk proses pengajuan peminjaman dengan alur approval berdasarkan role pengguna.

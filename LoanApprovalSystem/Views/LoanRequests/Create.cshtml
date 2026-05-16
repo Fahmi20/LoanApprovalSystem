@@ -1,0 +1,111 @@
+@model LoanApprovalSystem.Models.LoanRequest
+
+@{
+    ViewData["Title"] = "Create Loan Request";
+}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="mb-4">
+                <h2 class="fw-bold mb-1">Create Loan Request</h2>
+                <p class="text-muted mb-0">
+                    Buat pengajuan peminjaman baru dengan melampirkan dokumen PDF.
+                </p>
+            </div>
+
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body p-4">
+
+                    <form asp-action="Create" enctype="multipart/form-data" method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger"
+                             role="alert">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-semibold">
+                                Judul Pengajuan
+                            </label>
+                            <input asp-for="Title"
+                                   class="form-control"
+                                   placeholder="Contoh: Peminjaman Laptop" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label fw-semibold">
+                                Nominal Peminjaman
+                            </label>
+                            <input asp-for="Amount"
+                                   class="form-control"
+                                   type="number"
+                                   min="1"
+                                   placeholder="Contoh: 5000000" />
+                            <div class="form-text">
+                                Gunakan angka tanpa titik atau koma. Contoh: 15000000
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-semibold">
+                                Deskripsi
+                            </label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Tuliskan tujuan atau keterangan pengajuan"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Attachment PDF
+                            </label>
+                            <input type="file"
+                                   name="pdfFile"
+                                   class="form-control"
+                                   accept=".pdf" />
+                            <div class="form-text">
+                                Wajib upload file PDF, misalnya surat peminjaman.
+                            </div>
+                            <span asp-validation-for="AttachmentPath" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Informasi Approval:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Nominal kurang dari Rp 10.000.000 akan diproses sampai Manager.</li>
+                                <li>Nominal Rp 10.000.000 atau lebih akan dilanjutkan ke Direktur.</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                Kembali
+                            </a>
+
+                            <button type="submit" class="btn btn-primary">
+                                Submit Pengajuan
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

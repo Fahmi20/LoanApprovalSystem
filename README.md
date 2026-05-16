@@ -1,3 +1,38 @@
+# Database Migration Guide
+
+Dokumen ini menjelaskan cara membuat dan menjalankan database untuk project Loan Approval System menggunakan Entity Framework Core Migration.
+
+## Database
+
+Project ini menggunakan:
+
+- SQL Server
+- Entity Framework Core
+- ASP.NET Identity
+- Migration bawaan EF Core
+
+Nama database yang digunakan:
+LoanApprovalDB
+
+# appsettings.json
+
+menggunakan Windows Authentication:
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=LoanApprovalDB;Trusted_Connection=True;TrustServerCertificate=True;"
+}
+
+menggunakan SQL Server Authentication:
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=LoanApprovalDB;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
+}
+
+lalu Jalankan 
+Package Manager Console
+
+[POWER SHELL]
+Update-Database
+
+
 # Loan Approval System
 
 Loan Approval System adalah aplikasi web berbasis ASP.NET Core MVC untuk proses pengajuan peminjaman dengan alur approval berdasarkan role pengguna.

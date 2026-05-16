@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using LoanApprovalSystem.Data;
+using System.Text.Json;
 
 namespace LoanApprovalSystem.Areas.Identity.Pages.Account;
 
@@ -22,11 +23,19 @@ public class LoginModel : PageModel
 {
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<LoginModel> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+    public LoginModel(
+    SignInManager<IdentityUser> signInManager,
+    ILogger<LoginModel> logger,
+    IConfiguration configuration,
+    IHttpClientFactory httpClientFactory)
     {
         _signInManager = signInManager;
         _logger = logger;
+        _configuration = configuration;
+        _httpClientFactory = httpClientFactory;
     }
 
     /// <summary>
@@ -110,18 +119,32 @@ public class LoginModel : PageModel
 
         if (ModelState.IsValid)
         {
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            var isCaptchaValid = await IsReCaptchaValid();
+
+            if (!isCaptchaValid)
+            {
+                ModelState.AddModelError(string.Empty, "Mohon centang reCAPTCHA terlebih dahulu.");
+                return Page();
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(
+                Input.Email,
+                Input.Password,
+                Input.RememberMe,
+                lockoutOnFailure: false
+            );
+
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in.");
                 return LocalRedirect(returnUrl);
             }
+
             if (result.RequiresTwoFactor)
             {
                 return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
             }
+
             if (result.IsLockedOut)
             {
                 _logger.LogWarning("User account locked out.");
@@ -136,5 +159,44 @@ public class LoginModel : PageModel
 
         // If we got this far, something failed, redisplay form
         return Page();
+    }
+
+    private async Task<bool> IsReCaptchaValid()
+    {
+        var recaptchaResponse = Request.Form["g-recaptcha-response"].ToString();
+
+        if (string.IsNullOrEmpty(recaptchaResponse))
+        {
+            return false;
+        }
+
+        var secretKey = _configuration["GoogleReCaptcha:SecretKey"];
+
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            return false;
+        }
+
+        var client = _httpClientFactory.CreateClient();
+
+        var response = await client.PostAsync(
+            $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={recaptchaResponse}",
+            null
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        using var document = JsonDocument.Parse(json);
+
+        var success = document.RootElement
+            .GetProperty("success")
+            .GetBoolean();
+
+        return success;
     }
 }
